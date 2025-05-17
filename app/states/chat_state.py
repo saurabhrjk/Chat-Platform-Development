@@ -114,7 +114,7 @@ class ChatState(rx.State):
                 )
             ]
 
-    @rx.event
+    @rx.event(background=True)
     async def send_message(self, form_data: dict):
         """Sends a message."""
         auth_s = await self.get_state(AuthState)
