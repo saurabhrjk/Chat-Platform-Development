@@ -128,7 +128,7 @@ def admin_user_list_item(
         background_color=rx.cond(
             ChatState.active_chat_user_email
             == user["email"],
-            rx.color("slate", 100),
+            rx.color("slate", 2),
             "transparent",
         ),
         border_left_width=rx.cond(
@@ -140,7 +140,7 @@ def admin_user_list_item(
         border_left_color=rx.cond(
             ChatState.active_chat_user_email
             == user["email"],
-            rx.color("indigo", 500),
+            rx.color("indigo", 6),
             "transparent",
         ),
     )

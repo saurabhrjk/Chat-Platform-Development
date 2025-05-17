@@ -38,9 +38,9 @@ class ChatState(rx.State):
         return ("Unknown User", f"/{DEFAULT_PROFILE_PIC}")
 
     @rx.var
-    def current_chat_partner_name(self) -> str:
+    async def current_chat_partner_name(self) -> str:
         """Determines the name of the current chat partner."""
-        auth_s = self.get_state(AuthState)
+        auth_s = await self.get_state(AuthState)
         if auth_s.is_admin:
             if self.active_chat_user_email:
                 user = auth_s.users.get(
@@ -54,9 +54,9 @@ class ChatState(rx.State):
             return auth_s.admin_display_name
 
     @rx.var
-    def current_chat_partner_profile_pic(self) -> str:
+    async def current_chat_partner_profile_pic(self) -> str:
         """Determines the profile picture of the current chat partner."""
-        auth_s = self.get_state(AuthState)
+        auth_s = await self.get_state(AuthState)
         if auth_s.is_admin:
             if self.active_chat_user_email:
                 user = auth_s.users.get(
@@ -76,9 +76,9 @@ class ChatState(rx.State):
             return auth_s.admin_profile_photo_src
 
     @rx.var
-    def displayed_messages(self) -> list[Message]:
+    async def displayed_messages(self) -> list[Message]:
         """Filters messages for the current active chat."""
-        auth_s = self.get_state(AuthState)
+        auth_s = await self.get_state(AuthState)
         if (
             not auth_s.is_authenticated
             or not auth_s.logged_in_user_email
@@ -134,7 +134,9 @@ class ChatState(rx.State):
                 "Message content cannot be empty."
             )
             return
-        sender_email = auth_s.logged_in_user_email
+        sender_email = cast(
+            str, auth_s.logged_in_user_email
+        )
         receiver_email: str | None
         if auth_s.is_admin:
             if not self.active_chat_user_email:
@@ -184,7 +186,7 @@ class ChatState(rx.State):
             )
 
     @rx.var
-    def get_chat_user_list_for_admin_view(
+    async def get_chat_user_list_for_admin_view(
         self,
     ) -> list[dict[str, str]]:
         """
@@ -192,7 +194,7 @@ class ChatState(rx.State):
         for display in the admin's user list.
         Each item is a dict: {"email": str, "name": str, "profile_photo_src": str}
         """
-        auth_s = self.get_state(AuthState)
+        auth_s = await self.get_state(AuthState)
         if not auth_s.is_admin:
             return []
         interacted_user_emails = set()
@@ -211,7 +213,7 @@ class ChatState(rx.State):
                 interacted_user_emails.add(
                     msg["sender_email"]
                 )
-        for email, user_data in auth_s.users.items():
+        for email in auth_s.users:
             if email != ADMIN_EMAIL:
                 interacted_user_emails.add(email)
         user_list_for_view = []
