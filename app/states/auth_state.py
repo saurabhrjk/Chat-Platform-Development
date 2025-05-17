@@ -99,7 +99,7 @@ class AuthState(rx.State):
             return rx.get_upload_url(admin["profile_photo"])
         return f"/{DEFAULT_PROFILE_PIC}"
 
-    @rx.event
+    @rx.event(background=True)
     async def handle_profile_photo_upload(
         self, files: list[rx.UploadFile]
     ):

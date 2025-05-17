@@ -170,8 +170,7 @@ class ChatState(rx.State):
         """Allows admin to select a user to chat with."""
         auth_s = await self.get_state(AuthState)
         if auth_s.is_admin:
-            async with self:
-                self.active_chat_user_email = user_email
+            self.active_chat_user_email = user_email
             user_details = (
                 await self._get_user_details_from_auth(
                     user_email
