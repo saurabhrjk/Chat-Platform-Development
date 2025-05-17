@@ -1,8 +1,5 @@
 import reflex as rx
-from app.states.auth_state import (
-    AuthState,
-    DEFAULT_PROFILE_PIC,
-)
+from app.states.auth_state import AuthState
 
 
 def signup_form() -> rx.Component:
@@ -13,7 +10,7 @@ def signup_form() -> rx.Component:
             class_name="text-3xl font-bold text-center text-slate-800 mb-2",
         ),
         rx.el.p(
-            "Connect with Saurabh by creating an account.",
+            "Connect with Saurabh by creating an account. A random profile avatar will be assigned.",
             class_name="text-center text-slate-600 mb-8",
         ),
         rx.el.form(
@@ -65,83 +62,13 @@ def signup_form() -> rx.Component:
                 ),
                 class_name="mb-6",
             ),
-            rx.el.div(
-                rx.el.label(
-                    "Profile Photo (Optional)",
-                    class_name="block text-sm font-medium text-slate-700 mb-2",
-                ),
-                rx.upload.root(
-                    rx.el.div(
-                        rx.icon(
-                            tag="cloud_upload",
-                            class_name="w-10 h-10 mb-3 text-slate-400 group-hover:text-indigo-600 transition-colors",
-                        ),
-                        rx.el.p(
-                            rx.el.span(
-                                "Click to upload",
-                                class_name="font-semibold text-indigo-600",
-                            ),
-                            " or drag and drop",
-                            class_name="text-sm text-slate-500",
-                        ),
-                        rx.el.p(
-                            "PNG, JPG, GIF up to 1MB",
-                            class_name="text-xs text-slate-400",
-                        ),
-                        class_name="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 rounded-lg group hover:border-indigo-500 transition-colors bg-slate-50 hover:bg-slate-100 cursor-pointer",
-                    ),
-                    id="profile_photo_upload",
-                    on_drop=AuthState.handle_profile_photo_upload(
-                        rx.upload_files(
-                            upload_id="profile_photo_upload"
-                        )
-                    ),
-                    accept={
-                        "image/png": [".png"],
-                        "image/jpeg": [".jpg", ".jpeg"],
-                        "image/gif": [".gif"],
-                    },
-                    max_files=1,
-                    max_size=1 * 1024 * 1024,
-                    border="1px dashed #d1d5db",
-                    padding="1rem",
-                ),
-                rx.cond(
-                    AuthState.registration_profile_photo_filename,
-                    rx.el.div(
-                        rx.el.p(
-                            "Selected:",
-                            class_name="text-xs text-slate-600 mt-2 mb-1",
-                        ),
-                        rx.el.div(
-                            rx.el.img(
-                                src=rx.get_upload_url(
-                                    AuthState.registration_profile_photo_filename
-                                ),
-                                class_name="h-16 w-16 rounded-md object-cover border border-slate-300 mr-2",
-                            ),
-                            rx.el.p(
-                                AuthState.registration_profile_photo_filename,
-                                class_name="text-sm text-slate-700 truncate",
-                            ),
-                            class_name="flex items-center p-2 bg-slate-100 rounded-md",
-                        ),
-                        class_name="mt-2",
-                    ),
-                    rx.el.p(
-                        f"No photo selected. Default avatar ({DEFAULT_PROFILE_PIC.split('.')[0]}) will be used.",
-                        class_name="text-xs text-slate-500 mt-2",
-                    ),
-                ),
-                class_name="mb-6",
-            ),
             rx.el.button(
                 "Sign Up",
                 type="submit",
                 class_name="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50",
             ),
             on_submit=AuthState.sign_up,
-            reset_on_submit=False,
+            reset_on_submit=True,
             class_name="space-y-4",
         ),
         rx.el.p(

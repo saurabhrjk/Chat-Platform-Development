@@ -4,10 +4,15 @@ import bcrypt
 import uuid
 import os
 from typing import Optional, cast
+import random
 
 ADMIN_EMAIL = "saurabh@connectwithsaurabh.com"
 ADMIN_NAME = "Saurabh K."
-DEFAULT_PROFILE_PIC = "default_avatar.png"
+DEFAULT_PROFILE_PICS = [
+    "default_avatar.png",
+    "minimal_abstract_geometric.png",
+    "simple_minimal_abstract.png",
+]
 
 
 def hash_password(password: str) -> str:
@@ -33,11 +38,10 @@ class AuthState(rx.State):
         ADMIN_EMAIL: User(
             password=hash_password("adminpassword123"),
             name=ADMIN_NAME,
-            profile_photo=DEFAULT_PROFILE_PIC,
+            profile_photo=DEFAULT_PROFILE_PICS[0],
         )
     }
     logged_in_user_email: str | None = None
-    registration_profile_photo_filename: str | None = None
 
     @rx.var
     def is_authenticated(self) -> bool:
@@ -69,11 +73,13 @@ class AuthState(rx.State):
     def current_user_profile_photo_src(self) -> str:
         """Returns the URL for the current user's profile photo."""
         user = self.current_user
-        if user:
-            if user["profile_photo"] == DEFAULT_PROFILE_PIC:
-                return f"/{DEFAULT_PROFILE_PIC}"
-            return rx.get_upload_url(user["profile_photo"])
-        return f"/{DEFAULT_PROFILE_PIC}"
+        if (
+            user
+            and user["profile_photo"]
+            in DEFAULT_PROFILE_PICS
+        ):
+            return f"/{user['profile_photo']}"
+        return f"/{DEFAULT_PROFILE_PICS[0]}"
 
     @rx.var
     def admin_user_details(self) -> User | None:
@@ -90,38 +96,13 @@ class AuthState(rx.State):
     def admin_profile_photo_src(self) -> str:
         """Returns the URL for the admin's profile photo."""
         admin = self.admin_user_details
-        if admin:
-            if (
-                admin["profile_photo"]
-                == DEFAULT_PROFILE_PIC
-            ):
-                return f"/{DEFAULT_PROFILE_PIC}"
-            return rx.get_upload_url(admin["profile_photo"])
-        return f"/{DEFAULT_PROFILE_PIC}"
-
-    @rx.event(background=True)
-    async def handle_profile_photo_upload(
-        self, files: list[rx.UploadFile]
-    ):
-        """Handles the profile photo upload during registration."""
-        if not files:
-            return
-        file = files[0]
-        upload_data = await file.read()
-        upload_dir = rx.get_upload_dir()
-        if not upload_dir.exists():
-            upload_dir.mkdir(parents=True, exist_ok=True)
-        safe_name = f"{uuid.uuid4().hex}_{file.filename}"
-        outfile_path = upload_dir / safe_name
-        with outfile_path.open("wb") as f:
-            f.write(upload_data)
-        async with self:
-            self.registration_profile_photo_filename = (
-                safe_name
-            )
-        yield rx.toast.info(
-            f"Selected {file.filename} for profile picture."
-        )
+        if (
+            admin
+            and admin["profile_photo"]
+            in DEFAULT_PROFILE_PICS
+        ):
+            return f"/{admin['profile_photo']}"
+        return f"/{DEFAULT_PROFILE_PICS[0]}"
 
     @rx.event
     def sign_up(self, form_data: dict):
@@ -142,9 +123,8 @@ class AuthState(rx.State):
                 "Email already in use. Please log in or use a different email."
             )
             return
-        profile_photo_to_save = (
-            self.registration_profile_photo_filename
-            or DEFAULT_PROFILE_PIC
+        profile_photo_to_save = random.choice(
+            DEFAULT_PROFILE_PICS
         )
         hashed_pw = hash_password(password)
         new_user = User(
@@ -154,9 +134,8 @@ class AuthState(rx.State):
         )
         self.users[email] = new_user
         self.logged_in_user_email = email
-        self.registration_profile_photo_filename = None
         yield rx.toast.success(
-            f"Welcome, {name}! Your account has been created."
+            f"Welcome, {name}! Your account has been created with a random avatar."
         )
         return rx.redirect("/chat")
 
